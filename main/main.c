@@ -31,8 +31,7 @@ static const char *TAG = "MQTT_EXAMPLE";
 esp_mqtt_client_handle_t mqtt_client;
 
 static esp_err_t mqtt_event_handler_cb(esp_mqtt_event_handle_t event) {
-    // Handle MQTT events (same as in your original MQTT code)
-    // ...
+    // TODO: Error handling
     return ESP_OK;
 }
 
@@ -49,7 +48,7 @@ static void mqtt_app_start(void) {
     esp_mqtt_client_start(mqtt_client);
 }
 
-void dht_test(void *pvParameters) {
+void dht_collect(void *pvParameters) {
     float temperature, humidity;
 
 #ifdef CONFIG_EXAMPLE_INTERNAL_PULLUP
@@ -64,17 +63,17 @@ void dht_test(void *pvParameters) {
             char hum_str[32];
             int temp_int = (int)temperature;
             int hum_int = (int)humidity;
-            snprintf(temp_str, sizeof(temp_str), "Temperature as integer: %d", temp_int);
-            snprintf(hum_str, sizeof(hum_str), "Humidity as integer: %d", hum_int);
+            snprintf(temp_str, sizeof(temp_str), "%d", temp_int);
+            snprintf(hum_str, sizeof(hum_str), "%d", hum_int);
             printf("Temperature: %dC - Humidity: %d\n", temp_int, hum_int);
-            esp_mqtt_client_publish(mqtt_client, "/mestrado/iot/aluno/khalil/temperatura", temp_str, 0, 1, 0);
-            esp_mqtt_client_publish(mqtt_client, "/mestrado/iot/aluno/khalil/umidade", hum_str, 0, 1, 0);
+            esp_mqtt_client_publish(mqtt_client, "mestrado/iot/aluno/khalil/temperatura", temp_str, 0, 1, 0);
+            esp_mqtt_client_publish(mqtt_client, "mestrado/iot/aluno/khalil/umidade", hum_str, 0, 1, 0);
         } else {
             // Handle errors
             printf("Failed to read data from sensor. Error code: %d\n", result);
         }
 
-        vTaskDelay(pdMS_TO_TICKS(2000));
+        vTaskDelay(pdMS_TO_TICKS(10000));
     }
 }
 
@@ -86,5 +85,5 @@ void app_main(void) {
     
     mqtt_app_start();
     
-    xTaskCreate(dht_test, "dht_test", configMINIMAL_STACK_SIZE * 3, NULL, 5, NULL);
+    xTaskCreate(dht_collect, "dht_collect", configMINIMAL_STACK_SIZE * 3, NULL, 5, NULL);
 }
