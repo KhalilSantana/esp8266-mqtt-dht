@@ -31,7 +31,28 @@ static const char *TAG = "MQTT_EXAMPLE";
 esp_mqtt_client_handle_t mqtt_client;
 
 static esp_err_t mqtt_event_handler_cb(esp_mqtt_event_handle_t event) {
-    // TODO: Error handling
+    switch (event->event_id)    {
+        case MQTT_EVENT_CONNECTED:
+            ESP_LOGI(TAG, "MQTT_EVENT_CONNECTED");
+            break;
+        case MQTT_EVENT_DISCONNECTED:
+            ESP_LOGI(TAG, "MQTT_EVENT_DISCONNECTED");
+            break;
+        case MQTT_EVENT_PUBLISHED:
+            ESP_LOGI(TAG, "MQTT_EVENT_PUBLISHED, msg_id=%d", event->msg_id);
+            break;
+        case MQTT_EVENT_DATA:
+            ESP_LOGI(TAG, "MQTT_EVENT_DATA");
+            printf("TOPIC=%.*s\r\n", event->topic_len, event->topic);
+            printf("DATA=%.*s\r\n", event->data_len, event->data);
+            break;
+        case MQTT_EVENT_ERROR:
+            ESP_LOGI(TAG, "MQTT_EVENT_ERROR");
+            break;
+        default:
+            ESP_LOGI(TAG, "Other event id:%d", event->event_id);
+            break;
+    }
     return ESP_OK;
 }
 
@@ -55,7 +76,7 @@ void dht_collect(void *pvParameters) {
     gpio_set_pull_mode(DHT_GPIO, GPIO_PULLUP_ONLY);
 #endif
 
-    while (1) {
+    while (true) {
         esp_err_t result = dht_read_float_data(SENSOR_TYPE, DHT_GPIO, &humidity, &temperature);
         
         if (result == ESP_OK) {
